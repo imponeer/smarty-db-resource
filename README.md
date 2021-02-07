@@ -1,5 +1,5 @@
 [![License](https://img.shields.io/github/license/imponeer/smarty-db-resource.svg)](LICENSE)
-[![GitHub release](https://img.shields.io/github/release/imponeer/smarty-db-resource.svg)](https://github.com/imponeer/smarty-db-resource/releases) [![Maintainability](https://api.codeclimate.com/v1/badges/c284ca86c6df6e98b9d0/maintainability)](https://codeclimate.com/github/imponeer/smarty-db-resource/maintainability) [![PHP](https://img.shields.io/packagist/php-v/imponeer/smarty-db-resource.svg)](http://php.net) 
+[![GitHub release](https://img.shields.io/github/release/imponeer/smarty-db-resource.svg)](https://github.com/imponeer/smarty-db-resource/releases) [![Maintainability](https://api.codeclimate.com/v1/badges/6fd7f259cb9d80e65616/maintainability)](https://codeclimate.com/github/imponeer/smarty-db-resource/maintainability) [![PHP](https://img.shields.io/packagist/php-v/imponeer/smarty-db-resource.svg)](http://php.net) 
 [![Packagist](https://img.shields.io/packagist/dm/imponeer/smarty-db-resource.svg)](https://packagist.org/packages/imponeer/smarty-db-resource)
 
 # Smarty DB resource

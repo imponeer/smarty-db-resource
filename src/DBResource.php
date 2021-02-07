@@ -78,7 +78,8 @@ class DBResource extends \Smarty_Resource_Custom implements \Imponeer\Contracts\
         string $templateNameColumnName,
         callable $templatePathGetter,
         string $defaultTplSetName = 'default'
-    ) {
+    )
+    {
         $this->cache = $cacheItemPool;
         $this->pdo = $pdo;
         $this->templatesTableName = $templatesTableName;
@@ -127,28 +128,63 @@ class DBResource extends \Smarty_Resource_Custom implements \Imponeer\Contracts\
         $data = $this->fetchTemplateDataFromDatabase($template);
 
         if ($data === null) {
-            $cachedItem->set([null, null]);
-            $this->cache->save($cachedItem);
-            return $cachedItem->get();
+            $content = $this->getCacheArrayForNotFoundItem();
+        } elseif ($data[$this->tplSetColumnName] !== $this->defaultTplSetName) {
+            $content = $this->getCacheArrayForDatabaseRow($data);
+        } else {
+            $content = $this->getCacheArrayForFile(
+                call_user_func($this->templatePathGetter, $data)
+            );
         }
 
-        if ($data[$this->tplSetColumnName] !== $this->defaultTplSetName) {
-            $cachedItem->set([
-                $data[$this->templateSourceColumnName],
-                $data[$this->templateModificationColumnName],
-            ]);
-            $this->cache->save($cachedItem);
-            return $cachedItem->get();
-        }
+        $cachedItem->set($content);
 
-        $file = call_user_func($this->templatePathGetter, $data);
-        $cachedItem->set([
-            file_get_contents($file),
-            filemtime($file),
-        ]);
         $this->cache->save($cachedItem);
 
-        return $cachedItem->get();
+        return $content;
+    }
+
+    /**
+     * Gets array that will be cached for empty item
+     *
+     * @return array
+     */
+    protected function getCacheArrayForNotFoundItem(): array
+    {
+        return [
+            null,
+            null,
+        ];
+    }
+
+    /**
+     * Gets array that will be cached for database item
+     *
+     * @param array $data Array row data (assoc)
+     *
+     * @return array
+     */
+    protected function getCacheArrayForDatabaseRow(array $data): array
+    {
+        return [
+            $data[$this->templateSourceColumnName],
+            $data[$this->templateModificationColumnName],
+        ];
+    }
+
+    /**
+     * Gets array that will be cached for real file
+     *
+     * @param string $file File for what to create this array
+     *
+     * @return array
+     */
+    protected function getCacheArrayForFile(string $file): array
+    {
+        return [
+            file_get_contents($file),
+            filemtime($file),
+        ];
     }
 
     /**
