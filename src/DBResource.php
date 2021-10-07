@@ -113,11 +113,11 @@ class DBResource extends \Smarty_Resource_Custom implements \Imponeer\Contracts\
      *
      * @param string $template Template file name
      *
-     * @return array
+     * @return array|null
      *
      * @throws \Psr\Cache\InvalidArgumentException
      */
-    private function getInfo(string $template): array
+    private function getInfo(string $template): ?array
     {
         $cacheKey = 'smarty-db-resource-' . md5($template) . '-' . strlen($template);
         $cachedItem = $this->cache->getItem($cacheKey);
@@ -132,9 +132,12 @@ class DBResource extends \Smarty_Resource_Custom implements \Imponeer\Contracts\
         } elseif ($data[$this->tplSetColumnName] !== $this->defaultTplSetName) {
             $content = $this->getCacheArrayForDatabaseRow($data);
         } else {
-            $content = $this->getCacheArrayForFile(
-                call_user_func($this->templatePathGetter, $data)
-            );
+        	$ret = call_user_func($this->templatePathGetter, $data);
+        	if ($ret === null) {
+        		return $ret;
+			}
+
+            $content = $this->getCacheArrayForFile($ret);
         }
 
         $cachedItem->set($content);
