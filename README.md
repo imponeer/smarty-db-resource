@@ -24,7 +24,6 @@ If you want to use these extensions from this package in your project you need r
 ```php
 $smarty = new \Smarty();
 $plugin = new \Imponeer\Smarty\Extensions\DBResource\DBResource(
-    $cacheItemPool, // psr-6 compatible cache instance
     $pdo, // PDO compatible database connection
     'default', // current template set name
     'tplfile',
