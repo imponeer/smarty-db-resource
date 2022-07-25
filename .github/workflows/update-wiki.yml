@@ -16,7 +16,5 @@ jobs:
       - name: Updating Project Wiki...
         uses: impresscms-dev/phpdocs-wiki-update-action@v2.2
         with:
-          wiki_github_update_token: ${{secrets.WIKI_GITHUB_UPDATE_TOKEN}}
-          wiki_github_update_user: ${{secrets.WIKI_GITHUB_UPDATE_USER}}
-          class_root_namespace: Imponeer\Contracts\Smarty\
-          include: Imponeer\Contracts\Smarty\**
+          class_root_namespace: Imponeer\Smarty\Extensions\DBResource\
+          include: Imponeer\Smarty\Extensions\DBResource\**
