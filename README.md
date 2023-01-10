@@ -27,7 +27,7 @@ $plugin = new \Imponeer\Smarty\Extensions\DBResource\DBResource(
     $pdo, // PDO compatible database connection
     'default', // current template set name
     'tplfile',
-    'tpl_source,
+    'tpl_source',
     'tpl_lastmodified',
     'tpl_tplset',
     'tpl_file',
