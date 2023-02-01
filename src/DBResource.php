@@ -5,13 +5,14 @@ namespace Imponeer\Smarty\Extensions\DBResource;
 use Exception;
 use Imponeer\Contracts\Smarty\Extension\SmartyResourceInterface;
 use PDO;
+use Smarty_Resource_Custom;
 
 /**
  * Smarty resource type to fetch template from database
  *
  * @package Imponeer\Smarty\Extensions\DBResource
  */
-class DBResource extends \Smarty_Resource_Custom implements SmartyResourceInterface
+class DBResource extends Smarty_Resource_Custom implements SmartyResourceInterface
 {
     /**
      * @var PDO
@@ -51,29 +52,29 @@ class DBResource extends \Smarty_Resource_Custom implements SmartyResourceInterf
      */
     private $templatePathGetter;
 
-	/**
-	 * Constructor.
-	 *
-	 * @param PDO $pdo PDO compatible database connection instance
-	 * @param string $tplSetName Current template set name
-	 * @param string $templatesTableName Table name where all template data are located
-	 * @param string $templateSourceColumnName Column name that is used to store template source code
-	 * @param string $templateModificationColumnName Column name that is used to store template modification Unix timestamp
-	 * @param string $tplSetColumnName Column name that identifies template related teplate set for core
-	 * @param string $templateNameColumnName Column name that identifies template file name
-	 * @param callable $templatePathGetter Callable that is used to convert from database fetched data into real template path
-	 * @param string $defaultTplSetName Default template set name
-	 */
+    /**
+     * Constructor.
+     *
+     * @param PDO $pdo PDO compatible database connection instance
+     * @param string $tplSetName Current template set name
+     * @param string $templatesTableName Table name where all template data are located
+     * @param string $templateSourceColumnName Column name that is used to store template source code
+     * @param string $templateModificationColumnName Column name that is used to store template modification Unix timestamp
+     * @param string $tplSetColumnName Column name that identifies template related teplate set for core
+     * @param string $templateNameColumnName Column name that identifies template file name
+     * @param callable $templatePathGetter Callable that is used to convert from database fetched data into real template path
+     * @param string $defaultTplSetName Default template set name
+     */
     public function __construct(
-        PDO $pdo,
-        string $tplSetName,
-        string $templatesTableName,
-        string $templateSourceColumnName,
-        string $templateModificationColumnName,
-        string $tplSetColumnName,
-        string $templateNameColumnName,
+        PDO      $pdo,
+        string   $tplSetName,
+        string   $templatesTableName,
+        string   $templateSourceColumnName,
+        string   $templateModificationColumnName,
+        string   $tplSetColumnName,
+        string   $templateNameColumnName,
         callable $templatePathGetter,
-        string $defaultTplSetName = 'default'
+        string   $defaultTplSetName = 'default'
     )
     {
         $this->pdo = $pdo;
@@ -103,15 +104,15 @@ class DBResource extends \Smarty_Resource_Custom implements SmartyResourceInterf
         [$source, $mtime] = $this->getInfo($name);
     }
 
-	/**
-	 * Gets info for template
-	 *
-	 * @param string $template Template file name
-	 *
-	 * @return array|null
-	 *
-	 * @throws Exception
-	 */
+    /**
+     * Gets info for template
+     *
+     * @param string $template Template file name
+     *
+     * @return array|null
+     *
+     * @throws Exception
+     */
     private function getInfo(string $template): ?array
     {
         $data = $this->fetchTemplateDataFromDatabase($template);
@@ -121,10 +122,10 @@ class DBResource extends \Smarty_Resource_Custom implements SmartyResourceInterf
         } elseif ($data[$this->tplSetColumnName] !== $this->defaultTplSetName) {
             $content = $this->getCacheArrayForDatabaseRow($data);
         } else {
-        	$ret = call_user_func($this->templatePathGetter, $data);
-        	if ($ret === null) {
-        		return null;
-			}
+            $ret = call_user_func($this->templatePathGetter, $data);
+            if ($ret === null) {
+                return null;
+            }
 
             $content = $this->getCacheArrayForFile($ret);
         }
@@ -173,6 +174,23 @@ class DBResource extends \Smarty_Resource_Custom implements SmartyResourceInterf
     }
 
     /**
+     * Gets select query for the driver
+     *
+     * @return string
+     */
+    private function getSelectQuery(): string
+    {
+        switch ($this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME)) {
+            case 'sqlite':
+            case 'sqlite3':
+                return 'SELECT *, CASE WHEN `%3$s` IS NOT NULL THEN 1 ELSE 0 END ___order  FROM `%1$s` WHERE `%2$s` = :template AND `%3$s` IN (:tplset, :defaultTplSet) ORDER BY ___order ASC LIMIT 1';
+            default:
+                return 'SELECT * FROM `%1$s` WHERE `%2$s` = :template AND `%3$s` IN (:tplset, :defaultTplSet) ORDER BY IF(`%3$s` = :defaultTplSet, 1, 0) ASC LIMIT 1';
+        }
+
+    }
+
+    /**
      * Fetches template modify date info
      *
      * @param string $template Template to find in DB
@@ -185,7 +203,7 @@ class DBResource extends \Smarty_Resource_Custom implements SmartyResourceInterf
     {
         $stm = $this->pdo->prepare(
             sprintf(
-                'SELECT * FROM `%1$s` WHERE `%2$s` = :template AND `%3$s` IN (:tplset, :defaultTplSet) ORDER BY IF(`%3$s` = :defaultTplSet, 1, 0) ASC LIMIT 1',
+                $this->getSelectQuery(),
                 $this->templatesTableName,
                 $this->templateNameColumnName,
                 $this->tplSetColumnName

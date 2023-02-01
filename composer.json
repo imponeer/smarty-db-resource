@@ -3,9 +3,9 @@
     "description": "Smarty plugin that adds DB resource type",
     "type": "library",
     "require": {
-        "php": ">=7.1",
-        "ext-PDO": ">=7.1",
-        "imponeer/smarty-extensions-contracts": "^1.0 || ^2.0"
+        "php": "^7.3|^8.0",
+        "ext-PDO": "*",
+        "imponeer/smarty-extensions-contracts": "^3.0"
     },
     "license": "MIT",
     "authors": [
@@ -23,6 +23,17 @@
         "smarty",
         "database",
         "pdo",
-        "smarty-plugins"
-    ]
+        "smarty-plugins",
+        "smarty-resource"
+    ],
+    "scripts": {
+        "test": "phpunit --testdox"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^8.0",
+        "ext-sqlite3": "*"
+    },
+    "config": {
+        "sort-packages": true
+    }
 }
