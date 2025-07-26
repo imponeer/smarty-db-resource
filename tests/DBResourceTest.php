@@ -10,14 +10,12 @@ use Smarty\Exception as SmartyException;
 
 class DBResourceTest extends TestCase
 {
-
     private Smarty $smarty;
     private PDO $pdo;
-    private DBResource $plugin;
 
     public function testInvokeWithNonExistingFile(): void
     {
-        $this->expectException(\Smarty\Exception::class);
+        $this->expectException(SmartyException::class);
         $this->renderTemplateFromString('{include file="db:/images/image.tpl"}');
     }
 
@@ -55,10 +53,24 @@ class DBResourceTest extends TestCase
      */
     private function createTestTplRecord(): void
     {
-        $statement = $this->pdo->prepare(
-            'INSERT INTO tplfile (`tpl_tplset`, `tpl_file`, `tpl_desc`, `tpl_lastmodified`, `tpl_lastimported`, `tpl_type`)
-                   VALUES (:tpl_tplset, :tpl_file, :tpl_desc, :tpl_lastmodified, :tpl_lastimported, :tpl_type)'
-        );
+        $statement = $this->pdo->prepare(<<<'SQL'
+            INSERT INTO tplfile (
+                                 `tpl_tplset`,
+                                 `tpl_file`,
+                                 `tpl_desc`,
+                                 `tpl_lastmodified`,
+                                 `tpl_lastimported`,
+                                 `tpl_type`
+                                 )
+                   VALUES (
+                           :tpl_tplset,
+                           :tpl_file,
+                           :tpl_desc,
+                           :tpl_lastmodified,
+                           :tpl_lastimported,
+                           :tpl_type
+                           )
+        SQL);
         $statement->execute([
             ':tpl_tplset' => 'default',
             ':tpl_file' => 'test.tpl',
@@ -90,25 +102,25 @@ class DBResourceTest extends TestCase
         $this->pdo = new PDO("sqlite::memory:");
         $this->createTable();
 
-        $this->plugin = new DBResource(
-            $this->pdo,
-            'default',
-            'tplfile',
-            'tpl_source',
-            'tpl_lastmodified',
-            'tpl_tplset',
-            'tpl_file',
-            function (array $row): string { // function that converts database row info into string of real file
+        $plugin = new DBResource(
+            pdo: $this->pdo,
+            tplSetName: 'default',
+            templatesTableName: 'tplfile',
+            templateSourceColumnName: 'tpl_source',
+            templateModificationColumnName: 'tpl_lastmodified',
+            tplSetColumnName: 'tpl_tplset',
+            templateNameColumnName: 'tpl_file',
+            templatePathGetter: function (array $row): string {
                 return __DIR__ . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . $row['tpl_file'];
             },
-            'default'
+            defaultTplSetName: 'default'
         );
 
         $this->smarty = new Smarty();
         $this->smarty->caching = Smarty::CACHING_OFF;
         $this->smarty->registerResource(
             'db',
-            $this->plugin
+            $plugin
         );
 
         parent::setUp();
@@ -134,5 +146,4 @@ class DBResourceTest extends TestCase
         SQL
         );
     }
-
 }

@@ -4,7 +4,6 @@ namespace Imponeer\Smarty\Extensions\DatabaseResource\Drivers;
 
 class MysqlPdoDriver extends AbstractPdoDriver
 {
-
     /**
      * @inheritDoc
      */
