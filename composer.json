@@ -3,7 +3,7 @@
     "description": "Smarty plugin that adds DB resource type",
     "type": "library",
     "require": {
-        "php": "^8.1",
+        "php": "^8.3",
         "ext-pdo": "*",
         "smarty/smarty": "^5"
     },
