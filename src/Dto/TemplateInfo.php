@@ -10,6 +10,9 @@ class TemplateInfo
     ) {
     }
 
+    /**
+     * @return array{0: ?string, 1: ?int}
+     */
     public function toArray(): array
     {
         return [

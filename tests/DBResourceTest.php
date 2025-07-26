@@ -111,6 +111,8 @@ class DBResourceTest extends TestCase
             tplSetColumnName: 'tpl_tplset',
             templateNameColumnName: 'tpl_file',
             templatePathGetter: function (array $row): string {
+                assert(is_string($row['tpl_file']));
+
                 return __DIR__ . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . $row['tpl_file'];
             },
             defaultTplSetName: 'default'

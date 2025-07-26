@@ -30,8 +30,9 @@ class DBResource extends SmartyResourceCustom
      * @param string $templateModificationColumnName Column name that is used to store template modification timestamp
      * @param string $tplSetColumnName Column name that identifies template related template set for core
      * @param string $templateNameColumnName Column name that identifies template file name
-     * @param Closure $templatePathGetter Callable that is for to converting from database fetched data into real
-     *                                    template path
+     * @param Closure(array<int|string, mixed> $row): ?string $templatePathGetter Callable that is for to converting
+     *                                                                       from database fetched data into real
+     *                                                                       template path
      * @param string $defaultTplSetName Default template set name
      */
     public function __construct(
@@ -52,6 +53,9 @@ class DBResource extends SmartyResourceCustom
      * @inheritDoc
      *
      * @throws Exception
+     *
+     * @param-out string|null $source
+     * @param-out int|null $mtime
      */
     protected function fetch($name, &$source, &$mtime): void
     {
@@ -74,6 +78,15 @@ class DBResource extends SmartyResourceCustom
         if ($data === null) {
             $content = new TemplateInfo();
         } elseif ($data[$this->tplSetColumnName] !== $this->defaultTplSetName) {
+            assert(
+                is_string($data[$this->templateSourceColumnName]) ||
+                is_null($data[$this->templateSourceColumnName])
+            );
+            assert(
+                is_int($data[$this->templateModificationColumnName]) ||
+                is_null($data[$this->templateModificationColumnName])
+            );
+
             $content = new TemplateInfo(
                 $data[$this->templateSourceColumnName],
                 $data[$this->templateModificationColumnName],
@@ -88,10 +101,17 @@ class DBResource extends SmartyResourceCustom
                 return new TemplateInfo();
             }
 
-            $content = new TemplateInfo(
-                file_get_contents($ret),
-                filemtime($ret),
-            );
+            $fileContents = file_get_contents($ret);
+            if ($fileContents === false) {
+                return new TemplateInfo();
+            }
+
+            $fileMTime = filemtime($ret);
+            if ($fileMTime === false) {
+                return new TemplateInfo();
+            }
+
+            $content = new TemplateInfo($fileContents, $fileMTime);
         }
 
         return $content;

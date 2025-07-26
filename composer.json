@@ -34,10 +34,12 @@
     "scripts": {
         "test": "phpunit",
         "phpcs": "phpcs",
-        "phpcbf": "phpcbf"
+        "phpcbf": "phpcbf",
+        "phpstan": "phpstan analyse"
     },
     "require-dev": {
         "ext-sqlite3": "*",
+        "phpstan/phpstan": "^2",
         "phpunit/phpunit": "^12",
         "squizlabs/php_codesniffer": "^3.13"
     },
