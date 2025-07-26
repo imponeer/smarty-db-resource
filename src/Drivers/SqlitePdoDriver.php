@@ -13,7 +13,7 @@ class SqlitePdoDriver extends AbstractPdoDriver
         return sprintf(
             'SELECT 
                         *, 
-                        CASE WHEN `%3$s` IS NOT NULL THEN 1 ELSE 0 END ___order
+                        CASE WHEN `%3$s` = :defaultTplSet THEN 1 ELSE 0 END ___order
                     FROM `%1$s`
                     WHERE 
                           `%2$s` = :template 
