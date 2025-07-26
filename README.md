@@ -240,7 +240,7 @@ $smarty = $container->get(\Smarty\Smarty::class);
 
 ### Using with PHP-DI
 
-With PHP-DI container, you can take advantage of autowiring for a very simple configuration:
+With PHP-DI container, you can take advantage of autowiring for a clean configuration:
 
 ```php
 use function DI\create;
