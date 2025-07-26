@@ -1,56 +1,24 @@
 <?php
 
-namespace Imponeer\Smarty\Extensions\DBResource;
+namespace Imponeer\Smarty\Extensions\DatabaseResource;
 
+use Closure;
 use Exception;
-use Imponeer\Contracts\Smarty\Extension\SmartyResourceInterface;
+use Imponeer\Smarty\Extensions\DatabaseResource\Drivers\AbstractPdoDriver;
+use Imponeer\Smarty\Extensions\DatabaseResource\Drivers\MysqlPdoDriver;
+use Imponeer\Smarty\Extensions\DatabaseResource\Drivers\SqlitePdoDriver;
+use Imponeer\Smarty\Extensions\DatabaseResource\Dto\TemplateInfo;
 use PDO;
-use Smarty_Resource_Custom;
+use Smarty\Resource\CustomPlugin as SmartyResourceCustom;
 
 /**
  * Smarty resource type to fetch template from database
  *
  * @package Imponeer\Smarty\Extensions\DBResource
  */
-class DBResource extends Smarty_Resource_Custom implements SmartyResourceInterface
+class DBResource extends SmartyResourceCustom
 {
-    /**
-     * @var PDO
-     */
-    private $pdo;
-    /**
-     * @var string
-     */
-    private $templatesTableName;
-    /**
-     * @var string
-     */
-    private $templateSourceColumnName;
-    /**
-     * @var string
-     */
-    private $templateModificationColumnName;
-    /**
-     * @var string
-     */
-    private $tplSetName;
-    /**
-     * @var string
-     */
-    private $tplSetColumnName;
-    /**
-     * @var string
-     */
-    private $templateNameColumnName;
-    /**
-     * @var string
-     */
-    private $defaultTplSetName;
-
-    /**
-     * @var callable
-     */
-    private $templatePathGetter;
+    private AbstractPdoDriver $driver;
 
     /**
      * Constructor.
@@ -60,48 +28,34 @@ class DBResource extends Smarty_Resource_Custom implements SmartyResourceInterfa
      * @param string $templatesTableName Table name where all template data are located
      * @param string $templateSourceColumnName Column name that is used to store template source code
      * @param string $templateModificationColumnName Column name that is used to store template modification Unix timestamp
-     * @param string $tplSetColumnName Column name that identifies template related teplate set for core
+     * @param string $tplSetColumnName Column name that identifies template related template set for core
      * @param string $templateNameColumnName Column name that identifies template file name
-     * @param callable $templatePathGetter Callable that is used to convert from database fetched data into real template path
+     * @param Closure $templatePathGetter Callable that is used to convert from database fetched data into real template path
      * @param string $defaultTplSetName Default template set name
      */
     public function __construct(
-        PDO      $pdo,
-        string   $tplSetName,
-        string   $templatesTableName,
-        string   $templateSourceColumnName,
-        string   $templateModificationColumnName,
-        string   $tplSetColumnName,
-        string   $templateNameColumnName,
-        callable $templatePathGetter,
-        string   $defaultTplSetName = 'default'
+        private readonly PDO      $pdo,
+        private readonly string   $tplSetName,
+        private readonly string   $templatesTableName,
+        private readonly string   $templateSourceColumnName,
+        private readonly string   $templateModificationColumnName,
+        private readonly string   $tplSetColumnName,
+        private readonly string   $templateNameColumnName,
+        private readonly Closure  $templatePathGetter,
+        private readonly string   $defaultTplSetName = 'default'
     )
     {
-        $this->pdo = $pdo;
-        $this->templatesTableName = $templatesTableName;
-        $this->templateSourceColumnName = $templateSourceColumnName;
-        $this->templateModificationColumnName = $templateModificationColumnName;
-        $this->tplSetName = $tplSetName;
-        $this->tplSetColumnName = $tplSetColumnName;
-        $this->templateNameColumnName = $templateNameColumnName;
-        $this->defaultTplSetName = $defaultTplSetName;
-        $this->templatePathGetter = $templatePathGetter;
+        $this->driver = $this->createInstanceDriver();
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws Exception
      */
-    public function getName(): string
+    protected function fetch($name, &$source, &$mtime): void
     {
-        return 'db';
-    }
-
-    /**
-     * @inheritDoc
-     */
-    protected function fetch($name, &$source, &$mtime)
-    {
-        [$source, $mtime] = $this->getInfo($name);
+        [$source, $mtime] = $this->getInfo($name)->toArray();
     }
 
     /**
@@ -109,116 +63,64 @@ class DBResource extends Smarty_Resource_Custom implements SmartyResourceInterfa
      *
      * @param string $template Template file name
      *
-     * @return array|null
+     * @return TemplateInfo
      *
      * @throws Exception
      */
-    private function getInfo(string $template): ?array
+    private function getInfo(string $template): TemplateInfo
     {
-        $data = $this->fetchTemplateDataFromDatabase($template);
+        $data = $this->driver->fetchFromDatabase($template);
 
         if ($data === null) {
-            $content = $this->getCacheArrayForNotFoundItem();
+            $content = new TemplateInfo();
         } elseif ($data[$this->tplSetColumnName] !== $this->defaultTplSetName) {
-            $content = $this->getCacheArrayForDatabaseRow($data);
+            $content = new TemplateInfo(
+                $data[$this->templateSourceColumnName],
+                $data[$this->templateModificationColumnName],
+            );
         } else {
             $ret = call_user_func($this->templatePathGetter, $data);
             if ($ret === null) {
-                return null;
+                return new TemplateInfo();
             }
 
-            $content = $this->getCacheArrayForFile($ret);
+            $content = new TemplateInfo(
+                file_get_contents($ret),
+                filemtime($ret),
+            );
         }
 
         return $content;
     }
 
     /**
-     * Gets array that will be cached for empty item
+     * Gets database driver for dealing with templates
      *
-     * @return array
+     * @return AbstractPdoDriver
      */
-    protected function getCacheArrayForNotFoundItem(): array
+    private function createInstanceDriver(): AbstractPdoDriver
     {
-        return [null, null];
-    }
-
-    /**
-     * Gets array that will be cached for database item
-     *
-     * @param array $data Array row data (assoc)
-     *
-     * @return array
-     */
-    protected function getCacheArrayForDatabaseRow(array $data): array
-    {
-        return [
-            $data[$this->templateSourceColumnName],
-            $data[$this->templateModificationColumnName],
-        ];
-    }
-
-    /**
-     * Gets array that will be cached for real file
-     *
-     * @param string $file File for what to create this array
-     *
-     * @return array
-     */
-    protected function getCacheArrayForFile(string $file): array
-    {
-        return [
-            file_get_contents($file),
-            filemtime($file),
-        ];
-    }
-
-    /**
-     * Gets select query for the driver
-     *
-     * @return string
-     */
-    private function getSelectQuery(): string
-    {
-        switch ($this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME)) {
-            case 'sqlite':
-            case 'sqlite3':
-                return 'SELECT *, CASE WHEN `%3$s` IS NOT NULL THEN 1 ELSE 0 END ___order  FROM `%1$s` WHERE `%2$s` = :template AND `%3$s` IN (:tplset, :defaultTplSet) ORDER BY ___order ASC LIMIT 1';
-            default:
-                return 'SELECT * FROM `%1$s` WHERE `%2$s` = :template AND `%3$s` IN (:tplset, :defaultTplSet) ORDER BY IF(`%3$s` = :defaultTplSet, 1, 0) ASC LIMIT 1';
-        }
-
-    }
-
-    /**
-     * Fetches template modify date info
-     *
-     * @param string $template Template to find in DB
-     *
-     * @return array|null
-     *
-     * @throws Exception
-     */
-    private function fetchTemplateDataFromDatabase(string $template): ?array
-    {
-        $stm = $this->pdo->prepare(
-            sprintf(
-                $this->getSelectQuery(),
+        return match ($this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME)) {
+            'sqlite', 'sqlite3' => new SqlitePdoDriver(
+                $this->pdo,
+                $this->tplSetName,
                 $this->templatesTableName,
+                $this->templateSourceColumnName,
+                $this->templateModificationColumnName,
+                $this->tplSetColumnName,
                 $this->templateNameColumnName,
-                $this->tplSetColumnName
-            )
-        );
-        $stm->bindValue('template', $template, PDO::PARAM_STR);
-        $stm->bindValue('tplset', $this->tplSetName, PDO::PARAM_STR);
-        $stm->bindValue('defaultTplSet', $this->defaultTplSetName, PDO::PARAM_STR);
-        $stm->execute();
-
-        $row = $stm->fetch(PDO::FETCH_ASSOC);
-        if (!$row) {
-            return null;
-        }
-
-        return $row;
+                $this->defaultTplSetName
+            ),
+            default => new MysqlPdoDriver(
+                $this->pdo,
+                $this->tplSetName,
+                $this->templatesTableName,
+                $this->templateSourceColumnName,
+                $this->templateModificationColumnName,
+                $this->tplSetColumnName,
+                $this->templateNameColumnName,
+                $this->defaultTplSetName
+            ),
+        };
     }
 }
