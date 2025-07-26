@@ -7,18 +7,16 @@ use PDO;
 
 abstract class AbstractPdoDriver
 {
-
     public function __construct(
-        protected readonly PDO      $pdo,
-        protected readonly string   $tplSetName,
-        protected readonly string   $templatesTableName,
-        protected readonly string   $templateSourceColumnName,
-        protected readonly string   $templateModificationColumnName,
-        protected readonly string   $tplSetColumnName,
-        protected readonly string   $templateNameColumnName,
-        protected readonly string   $defaultTplSetName = 'default'
-    )
-    {
+        protected readonly PDO $pdo,
+        protected readonly string $tplSetName,
+        protected readonly string $templatesTableName,
+        protected readonly string $templateSourceColumnName,
+        protected readonly string $templateModificationColumnName,
+        protected readonly string $tplSetColumnName,
+        protected readonly string $templateNameColumnName,
+        protected readonly string $defaultTplSetName = 'default'
+    ) {
     }
 
     /**
@@ -56,5 +54,4 @@ abstract class AbstractPdoDriver
 
         return $row;
     }
-
 }

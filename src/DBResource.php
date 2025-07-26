@@ -27,24 +27,24 @@ class DBResource extends SmartyResourceCustom
      * @param string $tplSetName Current template set name
      * @param string $templatesTableName Table name where all template data are located
      * @param string $templateSourceColumnName Column name that is used to store template source code
-     * @param string $templateModificationColumnName Column name that is used to store template modification Unix timestamp
+     * @param string $templateModificationColumnName Column name that is used to store template modification timestamp
      * @param string $tplSetColumnName Column name that identifies template related template set for core
      * @param string $templateNameColumnName Column name that identifies template file name
-     * @param Closure $templatePathGetter Callable that is used to convert from database fetched data into real template path
+     * @param Closure $templatePathGetter Callable that is for to converting from database fetched data into real
+     *                                    template path
      * @param string $defaultTplSetName Default template set name
      */
     public function __construct(
-        private readonly PDO      $pdo,
-        private readonly string   $tplSetName,
-        private readonly string   $templatesTableName,
-        private readonly string   $templateSourceColumnName,
-        private readonly string   $templateModificationColumnName,
-        private readonly string   $tplSetColumnName,
-        private readonly string   $templateNameColumnName,
-        private readonly Closure  $templatePathGetter,
-        private readonly string   $defaultTplSetName = 'default'
-    )
-    {
+        private readonly PDO $pdo,
+        private readonly string $tplSetName,
+        private readonly string $templatesTableName,
+        private readonly string $templateSourceColumnName,
+        private readonly string $templateModificationColumnName,
+        private readonly string $tplSetColumnName,
+        private readonly string $templateNameColumnName,
+        private readonly Closure $templatePathGetter,
+        private readonly string $defaultTplSetName = 'default'
+    ) {
         $this->driver = $this->createInstanceDriver();
     }
 

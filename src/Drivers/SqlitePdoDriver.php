@@ -4,7 +4,6 @@ namespace Imponeer\Smarty\Extensions\DatabaseResource\Drivers;
 
 class SqlitePdoDriver extends AbstractPdoDriver
 {
-
     /**
      * @inheritDoc
      */

@@ -32,11 +32,14 @@
         "smarty-resource"
     ],
     "scripts": {
-        "test": "phpunit"
+        "test": "phpunit",
+        "phpcs": "phpcs",
+        "phpcbf": "phpcbf"
     },
     "require-dev": {
+        "ext-sqlite3": "*",
         "phpunit/phpunit": "^12",
-        "ext-sqlite3": "*"
+        "squizlabs/php_codesniffer": "^3.13"
     },
     "config": {
         "sort-packages": true
