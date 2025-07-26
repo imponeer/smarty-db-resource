@@ -2,13 +2,13 @@
 
 namespace Imponeer\Smarty\Extensions\DatabaseResource\Tests;
 
-use Imponeer\Smarty\Extensions\DatabaseResource\DBResource;
+use Imponeer\Smarty\Extensions\DatabaseResource\DatabaseResource;
 use PDO;
 use PHPUnit\Framework\TestCase;
 use Smarty\Smarty;
 use Smarty\Exception as SmartyException;
 
-class DBResourceTest extends TestCase
+class DatabaseResourceTest extends TestCase
 {
     private Smarty $smarty;
     private PDO $pdo;
@@ -102,7 +102,7 @@ class DBResourceTest extends TestCase
         $this->pdo = new PDO("sqlite::memory:");
         $this->createTable();
 
-        $plugin = new DBResource(
+        $plugin = new DatabaseResource(
             pdo: $this->pdo,
             tplSetName: 'default',
             templatesTableName: 'tplfile',

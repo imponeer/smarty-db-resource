@@ -16,7 +16,7 @@ use Smarty\Resource\CustomPlugin as SmartyResourceCustom;
  *
  * @package Imponeer\Smarty\Extensions\DBResource
  */
-class DBResource extends SmartyResourceCustom
+class DatabaseResource extends SmartyResourceCustom
 {
     private AbstractPdoDriver $driver;
 
