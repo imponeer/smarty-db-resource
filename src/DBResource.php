@@ -84,6 +84,10 @@ class DBResource extends SmartyResourceCustom
                 return new TemplateInfo();
             }
 
+            if (!is_file($ret) || !is_readable($ret)) {
+                return new TemplateInfo();
+            }
+
             $content = new TemplateInfo(
                 file_get_contents($ret),
                 filemtime($ret),
