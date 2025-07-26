@@ -31,7 +31,7 @@ abstract class AbstractPdoDriver
      *
      * @param string $template Template to find in DB
      *
-     * @return array|null
+     * @return array<string|int, mixed>|null
      *
      * @throws Exception
      */
@@ -44,13 +44,15 @@ abstract class AbstractPdoDriver
         $stm->bindValue('tplset', $this->tplSetName, PDO::PARAM_STR);
         $stm->bindValue('defaultTplSet', $this->defaultTplSetName, PDO::PARAM_STR);
         if (!$stm->execute()) {
-            throw new Exception('Failed to execute database query');
+            throw new \Smarty\Exception('Failed to execute database query');
         }
 
         $row = $stm->fetch(PDO::FETCH_ASSOC);
         if (!$row) {
             return null;
         }
+
+        assert(is_array($row));
 
         return $row;
     }
