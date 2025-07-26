@@ -13,7 +13,7 @@ class DBResourceTest extends TestCase
 
     private Smarty $smarty;
     private PDO $pdo;
-
+    private DBResource $plugin;
 
     public function testInvokeWithNonExistingFile(): void
     {
