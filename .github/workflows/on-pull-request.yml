@@ -11,20 +11,19 @@ jobs:
     strategy:
       max-parallel: 3
       matrix:
-        php:
-          - 8.1
-          - 8.2
+        php-version:
           - 8.3
+          - 8.4
         composer: 
           - 2  
-    name: Test - php:${{ matrix.php }}; composer:${{ matrix.composer }}
+    name: Test - php:${{ matrix.php-version }}; composer:${{ matrix.composer }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Install PHP
         uses: shivammathur/setup-php@master
         with:
-          php-version: ${{ matrix.php }}
+          php-version: ${{ matrix.php-version }}
           extensions: curl, pdo_sqlite, json, mbstring, pcre
           coverage: none
           tools: composer:v${{ matrix.composer }}
