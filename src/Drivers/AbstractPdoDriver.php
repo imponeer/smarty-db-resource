@@ -42,10 +42,12 @@ abstract class AbstractPdoDriver
         $stm = $this->pdo->prepare(
             $this->getSelectQuery()
         );
-        $stm->bindValue('template', $template,  PDO::PARAM_STR);
+        $stm->bindValue('template', $template, PDO::PARAM_STR);
         $stm->bindValue('tplset', $this->tplSetName, PDO::PARAM_STR);
         $stm->bindValue('defaultTplSet', $this->defaultTplSetName, PDO::PARAM_STR);
-        $stm->execute();
+        if (!$stm->execute()) {
+            throw new Exception('Failed to execute database query');
+        }
 
         $row = $stm->fetch(PDO::FETCH_ASSOC);
         if (!$row) {
