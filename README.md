@@ -448,21 +448,6 @@ composer test
 vendor/bin/phpunit --coverage-html coverage/
 ```
 
-### Testing with Different Databases
-
-The plugin includes tests for multiple database systems. You can test against different databases by configuring your test environment:
-
-```php
-// SQLite (default for tests)
-$pdo = new PDO("sqlite::memory:");
-
-// MySQL
-$pdo = new PDO("mysql:host=localhost;dbname=test", $username, $password);
-
-// PostgreSQL
-$pdo = new PDO("pgsql:host=localhost;dbname=test", $username, $password);
-```
-
 ## Documentation
 
 API documentation is automatically generated and available in the project's wiki. For more detailed information about the classes and methods, please refer to the [project wiki](https://github.com/imponeer/smarty-db-resource/wiki).
