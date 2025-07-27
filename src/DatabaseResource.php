@@ -21,6 +21,11 @@ class DatabaseResource extends SmartyResourceCustom
     private AbstractPdoDriver $driver;
 
     /**
+     * @var callable
+     */
+    private $templatePathGetter;
+
+    /**
      * Constructor.
      *
      * @param PDO $pdo PDO compatible database connection instance
@@ -30,7 +35,7 @@ class DatabaseResource extends SmartyResourceCustom
      * @param string $templateModificationColumnName Column name that is used to store template modification timestamp
      * @param string $tplSetColumnName Column name that identifies template related template set for core
      * @param string $templateNameColumnName Column name that identifies template file name
-     * @param Closure(array<int|string, mixed> $row): ?string $templatePathGetter Callable that is for to converting
+     * @param callable(array<int|string, mixed> $row): ?string $templatePathGetter Callable that is for to converting
      *                                                                       from database fetched data into real
      *                                                                       template path
      * @param string $defaultTplSetName Default template set name
@@ -43,10 +48,11 @@ class DatabaseResource extends SmartyResourceCustom
         private readonly string $templateModificationColumnName,
         private readonly string $tplSetColumnName,
         private readonly string $templateNameColumnName,
-        private readonly Closure $templatePathGetter,
+        callable $templatePathGetter,
         private readonly string $defaultTplSetName = 'default'
     ) {
         $this->driver = $this->createInstanceDriver();
+        $this->templatePathGetter = $templatePathGetter;
     }
 
     /**
@@ -93,7 +99,7 @@ class DatabaseResource extends SmartyResourceCustom
             );
         } else {
             $ret = call_user_func($this->templatePathGetter, $data);
-            if ($ret === null) {
+            if ($ret === null || !is_string($ret)) {
                 return new TemplateInfo();
             }
 

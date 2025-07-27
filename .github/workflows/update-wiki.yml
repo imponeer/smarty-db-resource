@@ -16,5 +16,5 @@ jobs:
       - name: Updating Project Wiki...
         uses: impresscms-dev/phpdocs-wiki-update-action@v2.2
         with:
-          class_root_namespace: Imponeer\Smarty\Extensions\DBResource\
-          include: Imponeer\Smarty\Extensions\DBResource\**
+          class_root_namespace: Imponeer\Smarty\Extensions\DatabaseResource\
+          include: Imponeer\Smarty\Extensions\DatabaseResource\**

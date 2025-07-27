@@ -3,6 +3,7 @@
 namespace Imponeer\Smarty\Extensions\DatabaseResource\Tests;
 
 use Imponeer\Smarty\Extensions\DatabaseResource\DatabaseResource;
+use Imponeer\Smarty\Extensions\DatabaseResource\Resolver\TemplatePathResolver;
 use PDO;
 use PHPUnit\Framework\TestCase;
 use Smarty\Smarty;
@@ -95,6 +96,36 @@ class DatabaseResourceTest extends TestCase
                 sprintf("Rendering failed (iteration - %d)", $i)
             );
         }
+    }
+
+    /**
+     * @throws SmartyException
+     */
+    public function testInvokeWithTemplatePathResolver(): void
+    {
+        $this->createTestTplRecord();
+
+        // Create a new Smarty instance with TemplatePathResolver
+        $templatePathResolver = new TemplatePathResolver(__DIR__ . DIRECTORY_SEPARATOR . 'data');
+
+        $plugin = new DatabaseResource(
+            pdo: $this->pdo,
+            tplSetName: 'default',
+            templatesTableName: 'tplfile',
+            templateSourceColumnName: 'tpl_source',
+            templateModificationColumnName: 'tpl_lastmodified',
+            tplSetColumnName: 'tpl_tplset',
+            templateNameColumnName: 'tpl_file',
+            templatePathGetter: $templatePathResolver,
+            defaultTplSetName: 'default'
+        );
+
+        $smarty = new Smarty();
+        $smarty->caching = Smarty::CACHING_OFF;
+        $smarty->registerResource('db', $plugin);
+
+        $ret = trim($smarty->fetch('eval:urlencode:' . urlencode('{include file="db:test.tpl"}')));
+        $this->assertSame('test', $ret);
     }
 
     public function setUp(): void
