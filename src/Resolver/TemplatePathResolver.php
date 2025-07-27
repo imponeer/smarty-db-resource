@@ -42,7 +42,7 @@ class TemplatePathResolver
 
         // Normalize path separators and remove any potential directory traversal
         $templateFile = str_replace('\\', '/', $templateFile);
-        $templateFile = preg_replace('/\.\.+/', '', $templateFile);
+        $templateFile = (string) preg_replace('/\.\.+/', '', $templateFile);
         $templateFile = ltrim($templateFile, '/');
 
         if (empty($templateFile)) {
