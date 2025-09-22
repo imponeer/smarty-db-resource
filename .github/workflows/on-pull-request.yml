@@ -21,7 +21,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
       - name: Install PHP
-        uses: shivammathur/setup-php@2.35.4
+        uses: shivammathur/setup-php@2.35.5
         with:
           php-version: ${{ matrix.php-version }}
           extensions: curl, pdo_sqlite, json, mbstring, pcre
